@@ -37,12 +37,14 @@ print(plot)
 
 Mean
 ```{r}
-mean(totalSteps$Steps)
+Mean = mean(totalSteps$Steps)
+print(Mean)
 ```
 
 Median
 ```{r}
-median(totalSteps$Steps)
+Median = median(totalSteps$Steps)
+print(Median)
 ```
 
 2. What is the average daily activity pattern?
@@ -73,7 +75,8 @@ dailyActivity_average[which.max(dailyActivity_average$Mean), ]$Interval
 ==========================
 Total number of missing values
 ```{r}
-sum(is.na(activity$steps))
+Sum = sum(is.na(activity$steps))
+print(Sum)
 ```
 
 ```{r}
@@ -99,11 +102,13 @@ print(attrib)
 mean and median total number of steps taken per day
 
 ```{r}
-mean(atributedActivityTotal$dailySteps)
+Mean = mean(atributedActivityTotal$dailySteps)
+print(Mean)
 ```
 
 ```{r}
-median(atributedActivityTotal$dailySteps)
+Median = median(atributedActivityTotal$dailySteps)
+print(Median)
 ```
 
 

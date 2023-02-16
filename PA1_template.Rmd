@@ -1,25 +1,135 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+Course Project 1
+================
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, fig.height = 5,
+                       fig.keep = 'all' ,fig.path = 'figures\ ', dev = 'png')
+library(ggplot2)
+library(ggthemes)
+path = getwd()
+unzip("repdata_data_activity.zip", exdir = path)
+activity <- read.csv("activity/activity.csv")
+```
+
+1. What is mean total number of steps taken per day?
+===================================================
+
+```{r}
+activity$date <- as.POSIXct(activity$date, "%Y%m%d")
+day <- weekdays(activity$date)
+activity <- cbind(activity, day)
+totalSteps <- with(activity, aggregate(steps, by = list(date), sum, na.rm = TRUE))
+names(totalSteps) <- c("Date", "Steps")
+totalStepsdf <- data.frame(totalSteps)
+```
+
+Plot 1.
+
+```{r}
+plot <- ggplot(totalStepsdf, aes(x = Steps)) + 
+     geom_histogram(breaks = seq(0, 25000, by = 2500), col = "red") + 
+     ylim(0, 20) + 
+     xlab("Total Steps Taken Per Day") + 
+     ylab("Frequency") + 
+     ggtitle("Total Number of Steps Taken on a Day")
+print(plot)
+```
+
+Mean
+```{r}
+mean(totalSteps$Steps)
+```
+
+Median
+```{r}
+median(totalSteps$Steps)
+```
+
+2. What is the average daily activity pattern?
+==============================================
+
+```{r}
+dailyActivity_average <- aggregate(activity$steps, by = list(activity$interval), 
+                                    FUN = mean, na.rm = TRUE)
+names(dailyActivity_average) <- c("Interval", "Mean")
+dailyActivity_averagedf <- data.frame(dailyActivity_average)
+```
+
+Plot 2.
+````{r}
+dailyaverage <- ggplot(dailyActivity_averagedf, mapping = aes(Interval, Mean)) + 
+     geom_line(col = "red") +
+     xlab("Interval") + 
+     ylab("Number of Steps") + 
+     ggtitle("Number of Steps Per Interval") 
+print(dailyaverage)
+```
+
+```{r}
+dailyActivity_average[which.max(dailyActivity_average$Mean), ]$Interval
+```
+
+3. Imputing missing values
+==========================
+Total number of missing values
+```{r}
+sum(is.na(activity$steps))
+```
+
+```{r}
+attributedSteps <- dailyActivity_average$Mean[match(activity$interval, dailyActivity_average)]
+atributedActivity <- transform(activity, steps = ifelse(is.na(activity$steps), yes = attributedSteps, no = activity$steps))
+atributedActivityTotal <- aggregate(steps ~ date, atributedActivity, sum)
+names(atributedActivityTotal) <- c("date", "dailySteps")
+sum(is.na(atributedActivityTotal$dailySteps))
+```
+
+Plot. 3
+```{r}
+atributedActivityTotaldf <- data.frame(atributedActivityTotal)
+attrib <- ggplot(atributedActivityTotal, aes(x = dailySteps)) + 
+     geom_histogram(breaks = seq(0, 25000, by = 2500), col = "blue") + 
+     ylim(0, 20) + 
+     xlab("Daily Steps Taken") + 
+     ylab("Frequency") + 
+     ggtitle("Number of Steps Taken Per Day")
+print(attrib)
+```
+
+mean and median total number of steps taken per day
+
+```{r}
+mean(atributedActivityTotal$dailySteps)
+```
+
+```{r}
+median(atributedActivityTotal$dailySteps)
+```
 
 
-## Loading and preprocessing the data
+4. Are there differences in activity patterns between weekdays and weekends?
+============================================================================
+```{r}
+activity$date <- as.Date(strptime(activity$date, format="%Y-%m-%d"))
+activity$daywk <- sapply(activity$date, function(x) {
+     if(weekdays(x) == "Saturday" | weekdays(x) == "Sunday")
+     {y <- "Weekend"}
+     else {y <- "Weekday"}
+     y
+})
+dailyactivity <-  aggregate(steps ~ interval + daywk, activity, mean, na.rm = TRUE)
+```
+
+Plot. 4
+```{r}
+weekday <-  ggplot(dailyactivity, aes(x = interval , y = steps, color = daywk)) + 
+     geom_line() + ggtitle("Daily Steps by Day of the Week") + 
+     xlab("Interval") + 
+     ylab("Number of Steps") +
+     facet_wrap(~daywk, ncol = 1, nrow=2) +
+     scale_color_discrete(name = "Day Type")
+print(weekday)
+```
 
 
 
-## What is mean total number of steps taken per day?
-
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
